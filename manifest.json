@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "xela.system-stats",
+  "name": "System Stats",
+  "version": "1.0.0",
+  "author": "xela",
+  "license": "MIT",
+  "description": "Compact CPU and GPU usage with temperatures in the bar.",
+  "kinds": ["bar-widget"],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "System Stats",
+    "description": "CPU/GPU usage and temperatures",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
