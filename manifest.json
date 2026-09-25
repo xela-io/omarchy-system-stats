@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "author": "xela",
   "license": "MIT",
-  "description": "Compact CPU and GPU usage with temperatures in the bar.",
+  "description": "Configurable CPU/GPU/RAM/network bar widget with grouped system details.",
   "kinds": ["bar-widget"],
   "activation": "on-demand",
   "entryPoints": {
@@ -13,9 +13,25 @@
   },
   "barWidget": {
     "displayName": "System Stats",
-    "description": "CPU/GPU usage and temperatures",
+    "description": "CPU/GPU with optional RAM and network speeds; details and preferences in popup",
     "category": "System",
     "allowMultiple": false,
-    "defaultSection": "right"
+    "defaultSection": "right",
+    "defaults": {
+      "showCpu": true,
+      "showGpu": true,
+      "showRam": false,
+      "showDown": false,
+      "showUp": false,
+      "refreshInterval": 2000
+    },
+    "schema": [
+      { "key": "showCpu", "type": "boolean", "label": "CPU in bar", "defaultValue": true },
+      { "key": "showGpu", "type": "boolean", "label": "GPU in bar", "defaultValue": true },
+      { "key": "showRam", "type": "boolean", "label": "RAM in bar", "defaultValue": false },
+      { "key": "showDown", "type": "boolean", "label": "Download in bar", "defaultValue": false },
+      { "key": "showUp", "type": "boolean", "label": "Upload in bar", "defaultValue": false },
+      { "key": "refreshInterval", "type": "integer", "label": "Refresh interval (ms)", "min": 1000, "max": 5000, "step": 1000, "defaultValue": 2000 }
+    ]
   }
 }

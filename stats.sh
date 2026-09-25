@@ -1,5 +1,4 @@
 #!/bin/sh
-awk '/^cpu / { sub(/^cpu +/, ""); print "cpu_ticks=" $0 }' /proc/stat
 cpu_name=$(lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n1)
 cpu_cores=$(lscpu -p=CORE | sed '/^#/d' | sort -u | wc -l)
 cpu_threads=$(getconf _NPROCESSORS_ONLN)
@@ -21,7 +20,6 @@ nvidia-smi --query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.t
       printf "gpu_power=%.0f\n", $6
       printf "gpu_mhz=%s\n", $7
     }'
-awk '/MemTotal:/ { total=$2 } /MemAvailable:/ { available=$2 } END { used=total-available; printf "ram_used=%.1f\nram_total=%.1f\nram_percent=%.0f\n", used/1048576, total/1048576, used*100/total }' /proc/meminfo
 df -hP / | awk 'NR==2 { print "disk_total=" $2; print "disk_used=" $3; print "disk_percent=" $5 }'
 printf 'processes=%s\n' "$(ps -e --no-headers | wc -l)"
 printf 'uptime=%s\n' "$(uptime -p | sed 's/^up //')"
