@@ -15,15 +15,11 @@ Panel {
   property var stats: ({})
   property var cpuSnapshot: null
   property var memorySnapshot: ({ percent: 0, used: "–", total: "–", available: "–", swapUsed: "–", swapTotal: "–" })
-  property var networkSnapshot: null
-  property double lastNetworkSample: 0
   readonly property int cpuUsage: cpuSnapshot ? cpuSnapshot.usage : 0
   readonly property int gpuUsage: Number(stats.gpu_usage || 0)
   readonly property bool showCpu: setting("showCpu", true) !== false
   readonly property bool showGpu: setting("showGpu", true) !== false
   readonly property bool showRam: setting("showRam", false) === true
-  readonly property bool showDown: setting("showDown", false) === true
-  readonly property bool showUp: setting("showUp", false) === true
   readonly property int refreshInterval: [1000, 2000, 3000, 4000, 5000].indexOf(Number(setting("refreshInterval", 2000))) >= 0
     ? Number(setting("refreshInterval", 2000)) : 2000
   readonly property string barText: {
@@ -31,8 +27,6 @@ Panel {
     if (showCpu) parts.push("CPU " + cpuUsage + "%")
     if (showGpu) parts.push("GPU " + value("gpu_usage", "%"))
     if (showRam) parts.push("RAM " + memorySnapshot.percent + "%")
-    if (showDown) parts.push("↓ " + (networkSnapshot ? networkSnapshot.download : "–"))
-    if (showUp) parts.push("↑ " + (networkSnapshot ? networkSnapshot.upload : "–"))
     return parts.length ? parts.join("  ") : "Systemmonitor"
   }
   implicitWidth: button.implicitWidth
@@ -49,7 +43,6 @@ Panel {
   function refresh() {
     cpuFile.reload()
     memoryFile.reload()
-    networkFile.reload()
     if (!probe.running) probe.running = true
   }
   function parseOutput(raw) {
@@ -76,16 +69,6 @@ Panel {
     id: memoryFile
     path: "/proc/meminfo"
     onLoaded: root.memorySnapshot = Model.parseMemory(text())
-  }
-  FileView {
-    id: networkFile
-    path: "/proc/net/dev"
-    onLoaded: {
-      var now = Date.now()
-      var elapsed = root.lastNetworkSample ? (now - root.lastNetworkSample) / 1000 : 0
-      root.networkSnapshot = Model.parseNetwork(text(), root.networkSnapshot, elapsed)
-      root.lastNetworkSample = now
-    }
   }
   Process {
     id: probe
@@ -190,12 +173,6 @@ Panel {
             Text { text: "Systemlaufwerk  " + root.value("disk_used", " / ") + root.value("disk_total") + " (" + root.value("disk_percent", ")"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption }
             Text { text: "Prozesse  " + root.value("processes"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption }
           }
-          PanelSectionHeader { text: "NETZWERK" }
-          Column {
-            width: parent.width; spacing: Style.space(6)
-            Text { text: "Schnittstelle  " + (root.networkSnapshot ? root.networkSnapshot.iface : "–"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
-            Text { text: "↓  " + (root.networkSnapshot ? root.networkSnapshot.download : "–") + "     ↑  " + (root.networkSnapshot ? root.networkSnapshot.upload : "–"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body }
-          }
           PanelSeparator {}
           PanelSectionHeader { text: "LEISTE EINSTELLEN" }
           Column {
@@ -203,8 +180,6 @@ Panel {
             Toggle { width: parent.width; label: "CPU"; checked: root.showCpu; onClicked: root.updateSetting("showCpu", !root.showCpu) }
             Toggle { width: parent.width; label: "NVIDIA-GPU"; checked: root.showGpu; onClicked: root.updateSetting("showGpu", !root.showGpu) }
             Toggle { width: parent.width; label: "RAM"; checked: root.showRam; onClicked: root.updateSetting("showRam", !root.showRam) }
-            Toggle { width: parent.width; label: "Download"; checked: root.showDown; onClicked: root.updateSetting("showDown", !root.showDown) }
-            Toggle { width: parent.width; label: "Upload"; checked: root.showUp; onClicked: root.updateSetting("showUp", !root.showUp) }
           }
           Text { text: "Aktualisierung"; color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body }
           Row {

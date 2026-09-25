@@ -23,22 +23,7 @@ test('RAM-Nutzung berücksichtigt verfügbaren Cache und Swap', () => {
   assert.equal(data.swapPercent, 50);
 });
 
-test('Netzwerk wählt aktive Schnittstelle nach aktuellem Durchsatz statt Lebenszeit-Traffic', () => {
-  const mk = (a, b, c, d) => `Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\n    lo: 900000 0 0 0 0 0 0 0 900000 0 0 0 0 0 0 0\n enp1s0: ${a} 0 0 0 0 0 0 0 ${b} 0 0 0 0 0 0 0\n wlp2s0: ${c} 0 0 0 0 0 0 0 ${d} 0 0 0 0 0 0 0\n`;
-  const first = model.parseNetwork(mk(1000000, 200000, 100, 20), null, 2);
-  assert.equal(first.rx, 0);
-  const next = model.parseNetwork(mk(1000005, 200003, 2148, 1044), first, 2);
-  assert.equal(next.iface, 'wlp2s0');
-  assert.equal(next.rx, 1024);
-  assert.equal(next.tx, 512);
-  assert.equal(next.download, '1.0 KiB/s');
-});
-
-test('Zähler-Reset und Schnittstellenwechsel erzeugen keine negativen oder falschen Spitzen', () => {
-  const mk = n => `Inter-| Receive | Transmit\n face |bytes packets errs drop fifo frame compressed multicast|bytes packets errs drop fifo colls carrier compressed\n enp1s0: ${n} 0 0 0 0 0 0 0 ${n} 0 0 0 0 0 0 0\n`;
-  const first = model.parseNetwork(mk(3000), null, 2);
-  const reset = model.parseNetwork(mk(50), first, 2);
-  assert.equal(reset.rx, 0);
-  assert.equal(reset.tx, 0);
-  assert.equal(model.parseNetwork(mk(55), reset, 0).rx, 0);
+test('Netzwerk-Parsen und Geschwindigkeitsformatierung gehören nicht zum Plugin', () => {
+  assert.equal(typeof model.parseNetwork, 'undefined');
+  assert.equal(typeof model.formatSpeed, 'undefined');
 });

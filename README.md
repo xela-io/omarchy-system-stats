@@ -3,15 +3,15 @@
 A compact, expandable system-monitor widget for the Omarchy bar.
 
 The bar shows CPU and NVIDIA GPU usage by default. The popup groups CPU/GPU
-sensors, RAM and swap, disk and process details, and per-interface network
-speeds. Its switches optionally add RAM, download, and upload to the bar;
-CPU/GPU can also be hidden. If all metrics are hidden, a "Systemmonitor"
-button remains so settings are still reachable. Refresh intervals: 1–5
-seconds (2 seconds by default); settings are saved in Omarchy's `shell.json`.
+sensors, RAM and swap, disk and process details. Its switches optionally add
+RAM to the bar; CPU/GPU can also be hidden. If all metrics are hidden, a
+"Systemmonitor" button remains so settings are still reachable. Refresh
+intervals: 1–5 seconds (2 seconds by default); settings are saved in Omarchy's
+`shell.json`. Network diagnostics remain in Omarchy's native network menu.
 
-CPU, RAM and network counters are read asynchronously from `/proc` via
-Quickshell `FileView` and parsed only after loading finishes. The shell probe
-still runs for the NVIDIA GPU, CPU sensors, disk and process details.
+CPU and RAM counters are read asynchronously from `/proc` via Quickshell
+`FileView` and parsed only after loading finishes. The shell probe still runs
+for the NVIDIA GPU, CPU sensors, disk and process details.
 
 ## Requirements
 
