@@ -27,3 +27,20 @@ test('Netzwerk-Parsen und Geschwindigkeitsformatierung gehören nicht zum Plugin
   assert.equal(typeof model.parseNetwork, 'undefined');
   assert.equal(typeof model.formatSpeed, 'undefined');
 });
+
+test('Auslastung ab 80 % gilt als Warnung, ab 95 % als kritisch', () => {
+  assert.equal(model.loadLevel(0), 0);
+  assert.equal(model.loadLevel(79), 0);
+  assert.equal(model.loadLevel(80), 1);
+  assert.equal(model.loadLevel(94), 1);
+  assert.equal(model.loadLevel(95), 2);
+  assert.equal(model.loadLevel('100'), 2);
+  assert.equal(model.loadLevel(undefined), 0);
+  assert.equal(model.loadLevel('–'), 0);
+});
+
+test('Warnfarben ersetzen die Themenfarbe nur bei erhöhter Last', () => {
+  assert.equal(model.levelColor(0, 'theme'), 'theme');
+  assert.notEqual(model.levelColor(1, 'theme'), 'theme');
+  assert.notEqual(model.levelColor(2, 'theme'), model.levelColor(1, 'theme'));
+});

@@ -27,6 +27,11 @@ Panel {
   readonly property bool showRam: setting("showRam", false) === true
   readonly property int refreshInterval: [1000, 2000, 3000, 4000, 5000].indexOf(Number(setting("refreshInterval", 2000))) >= 0
     ? Number(setting("refreshInterval", 2000)) : 2000
+  readonly property int cpuLevel: Model.loadLevel(cpuUsage)
+  readonly property int gpuLevel: stats.gpu_usage === undefined || stats.gpu_usage === "" ? 0 : Model.loadLevel(gpuUsage)
+  readonly property int ramLevel: Model.loadLevel(memorySnapshot.percent)
+  // Only metrics shown in the bar may raise the bar's indicator.
+  readonly property int barLevel: Math.max(showCpu ? cpuLevel : 0, showGpu ? gpuLevel : 0, showRam ? ramLevel : 0)
   readonly property string barText: {
     var parts = []
     if (showCpu) parts.push("CPU " + cpuUsage + "%")
@@ -107,6 +112,13 @@ Panel {
     tooltipText: "Systemdetails öffnen · Rechtsklick: aktualisieren"
     onPressed: function(b) { if (b === Qt.RightButton) root.refresh(); else root.toggle() }
   }
+  Rectangle {
+    anchors.left: button.left; anchors.right: button.right; anchors.bottom: button.bottom
+    anchors.leftMargin: 8; anchors.rightMargin: 8
+    height: 2; radius: 1
+    visible: root.barLevel > 0
+    color: Model.levelColor(root.barLevel, "transparent")
+  }
 
   KeyboardPanel {
     id: details
@@ -151,11 +163,11 @@ Panel {
               id: cpuCard
               anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
               anchors.margins: Style.space(10); spacing: Style.space(6)
-              Text { text: "CPU  " + root.cpuUsage + "%"; color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
+              Text { text: "CPU  " + root.cpuUsage + "%"; color: Model.levelColor(root.cpuLevel, Color.popups.text); font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
               Rectangle {
                 width: parent.width; height: Style.space(6); radius: height / 2
                 color: Qt.rgba(Color.popups.text.r, Color.popups.text.g, Color.popups.text.b, 0.15)
-                Rectangle { width: parent.width * root.cpuUsage / 100; height: parent.height; radius: parent.radius; color: Color.accent }
+                Rectangle { width: parent.width * root.cpuUsage / 100; height: parent.height; radius: parent.radius; color: Model.levelColor(root.cpuLevel, Color.accent) }
               }
               Text {
                 width: parent.width; wrapMode: Text.WordWrap
@@ -171,11 +183,11 @@ Panel {
               id: gpuCard
               anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
               anchors.margins: Style.space(10); spacing: Style.space(6)
-              Text { text: "GPU  " + root.value("gpu_usage", "%"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
+              Text { text: "GPU  " + root.value("gpu_usage", "%"); color: Model.levelColor(root.gpuLevel, Color.popups.text); font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
               Rectangle {
                 width: parent.width; height: Style.space(6); radius: height / 2
                 color: Qt.rgba(Color.popups.text.r, Color.popups.text.g, Color.popups.text.b, 0.15)
-                Rectangle { width: parent.width * root.gpuUsage / 100; height: parent.height; radius: parent.radius; color: Color.accent }
+                Rectangle { width: parent.width * root.gpuUsage / 100; height: parent.height; radius: parent.radius; color: Model.levelColor(root.gpuLevel, Color.accent) }
               }
               Text { width: parent.width; textFormat: Text.PlainText; elide: Text.ElideRight; text: root.value("gpu_name"); color: Qt.darker(Color.popups.text, 1.25); font.family: Style.font.family; font.pixelSize: Style.font.caption }
               Text {
@@ -188,7 +200,7 @@ Panel {
           PanelSectionHeader { text: "SPEICHER & LAUFWERK" }
           Column {
             width: parent.width; spacing: Style.space(6)
-            Text { text: "RAM  " + root.memorySnapshot.percent + "%  ·  " + root.memorySnapshot.used + " / " + root.memorySnapshot.total + " GiB"; color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
+            Text { text: "RAM  " + root.memorySnapshot.percent + "%  ·  " + root.memorySnapshot.used + " / " + root.memorySnapshot.total + " GiB"; color: Model.levelColor(root.ramLevel, Color.popups.text); font.family: Style.font.family; font.pixelSize: Style.font.body; font.bold: true }
             Text { width: parent.width; wrapMode: Text.WordWrap; text: "Verfügbar " + root.memorySnapshot.available + " GiB  ·  Swap " + root.memorySnapshot.swapUsed + " / " + root.memorySnapshot.swapTotal + " GiB"; color: Qt.darker(Color.popups.text, 1.3); font.family: Style.font.family; font.pixelSize: Style.font.caption }
             Text { text: "Systemlaufwerk  " + root.value("disk_used", " / ") + root.value("disk_total") + " (" + root.value("disk_percent", ")"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption }
             Text { text: "Prozesse  " + root.value("processes"); color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption }

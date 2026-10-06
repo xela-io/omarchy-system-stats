@@ -37,3 +37,21 @@ function parseMemory(raw) {
     swapTotal: (swapTotal / 1048576).toFixed(1)
   }
 }
+
+var WARN_PERCENT = 80
+var CRITICAL_PERCENT = 95
+
+// 0 = normal, 1 = warning, 2 = critical
+function loadLevel(percent) {
+  var p = Number(percent)
+  if (!isFinite(p)) return 0
+  if (p >= CRITICAL_PERCENT) return 2
+  if (p >= WARN_PERCENT) return 1
+  return 0
+}
+
+function levelColor(level, normal) {
+  if (level >= 2) return "#e01b24"
+  if (level === 1) return "#e5a50a"
+  return normal
+}

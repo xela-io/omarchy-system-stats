@@ -66,3 +66,10 @@ test('Statische Hardwaredaten werden einmal, Sensoren pro Takt nur bei Bedarf ge
   assert.ok(qml.includes('probeMode = opened ? "details" : "bar"'));
   assert.ok(qml.includes('if (!opened && !showGpu) return'));
 });
+
+test('Hohe Last färbt Popup-Werte und markiert die Leiste nur für sichtbare Metriken', () => {
+  for (const level of ['cpuLevel', 'gpuLevel', 'ramLevel'])
+    assert.ok(qml.includes(`Model.levelColor(root.${level}`), level);
+  assert.match(qml, /barLevel:\s*Math\.max\(showCpu \? cpuLevel : 0, showGpu \? gpuLevel : 0, showRam \? ramLevel : 0\)/);
+  assert.match(qml, /visible:\s*root\.barLevel > 0/);
+});

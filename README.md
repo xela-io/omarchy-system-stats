@@ -7,7 +7,9 @@ sensors, RAM and swap, disk and process details. Its switches optionally add
 RAM to the bar; CPU/GPU can also be hidden. If all metrics are hidden, a
 "Systemmonitor" button remains so settings are still reachable. Refresh
 intervals: 1–5 seconds (2 seconds by default); settings are saved in Omarchy's
-`shell.json`. Network diagnostics remain in Omarchy's native network menu.
+`shell.json`. When CPU, GPU or RAM reach 80 % the values and usage bars in the
+popup turn amber, and red at 95 %; a thin line under the bar widget shows the
+highest level among the metrics currently shown in the bar. Network diagnostics remain in Omarchy's native network menu.
 
 CPU and RAM counters are read asynchronously from `/proc` via Quickshell
 `FileView` and parsed only after loading finishes. The shell probe still runs
