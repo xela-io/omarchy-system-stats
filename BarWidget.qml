@@ -12,7 +12,12 @@ Panel {
 
   // Only hardware sensors and system details need the shell probe.
   // FileView's onLoaded is the sampling boundary: reload() is asynchronous.
+  // Static hardware facts are probed once; while the popup is closed each tick
+  // only asks for GPU load (and nothing at all when GPU is hidden from the bar).
+  property var staticInfo: ({})
   property var stats: ({})
+  property string probeMode: "bar"
+  readonly property string probeScript: Quickshell.env("HOME") + "/.config/omarchy/plugins/xela.system-stats/stats.sh"
   property var cpuSnapshot: null
   property var memorySnapshot: ({ percent: 0, used: "–", total: "–", available: "–", swapUsed: "–", swapTotal: "–" })
   readonly property int cpuUsage: cpuSnapshot ? cpuSnapshot.usage : 0
@@ -48,7 +53,10 @@ Panel {
   function refresh() {
     cpuFile.reload()
     memoryFile.reload()
-    if (!probe.running) probe.running = true
+    if (probe.running) return
+    if (!opened && !showGpu) return
+    probeMode = opened ? "details" : "bar"
+    probe.running = true
   }
   function parseOutput(raw) {
     var next = {}
@@ -57,13 +65,15 @@ Panel {
       var p = lines[i].indexOf("=")
       if (p > 0) next[lines[i].slice(0, p)] = lines[i].slice(p + 1)
     }
-    stats = next
+    return next
   }
   function value(key, suffix) {
     var v = stats[key]
+    if (v === undefined || v === "") v = staticInfo[key]
     return v === undefined || v === "" ? "–" : String(v) + (suffix || "")
   }
   onOpenedChanged: if (opened) refresh()
+  Component.onCompleted: staticProbe.running = true
 
   FileView {
     id: cpuFile
@@ -76,10 +86,20 @@ Panel {
     onLoaded: root.memorySnapshot = Model.parseMemory(text())
   }
   Process {
+    id: staticProbe
+    command: ["sh", root.probeScript, "static"]
+    stdout: StdioCollector { id: staticOutput; waitForEnd: true }
+    onExited: root.staticInfo = root.parseOutput(staticOutput.text)
+  }
+  Process {
     id: probe
-    command: ["sh", Quickshell.env("HOME") + "/.config/omarchy/plugins/xela.system-stats/stats.sh"]
+    command: ["sh", root.probeScript, root.probeMode]
     stdout: StdioCollector { id: output; waitForEnd: true }
-    onExited: root.parseOutput(output.text)
+    onExited: {
+      root.stats = root.parseOutput(output.text)
+      // The popup opened while a bar-only probe was running: fetch details now.
+      if (root.opened && root.probeMode !== "details") Qt.callLater(root.refresh)
+    }
   }
   Timer { interval: root.refreshInterval; running: true; repeat: true; triggeredOnStart: true; onTriggered: root.refresh() }
 
