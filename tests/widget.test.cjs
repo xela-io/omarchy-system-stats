@@ -51,3 +51,18 @@ test('Jedes im Manifest erlaubte Aktualisierungsintervall ist auch im Popup ausw
     assert.ok(qml.includes(`root.refreshInterval === ${ms}`), `${ms} ms selection`);
   }
 });
+
+test('Statische Hardwaredaten werden einmal, Sensoren pro Takt nur bei Bedarf gelesen', () => {
+  const section = (mode) => script.match(new RegExp(`^${mode}\\)\\n([\\s\\S]*?)^  ;;`, 'm'))[1];
+  const staticPart = section('static');
+  const barPart = section('bar');
+  const detailsPart = section('details');
+  for (const key of ['cpu_name', 'cpu_cores', 'cpu_threads', 'gpu_name', 'vram_total'])
+    assert.ok(staticPart.includes(key), `${key} in static`);
+  assert.doesNotMatch(barPart + detailsPart, /lscpu|getconf|gpu_name|vram_total/);
+  assert.doesNotMatch(barPart, /df |ps -e|uptime|hwmon|cpuinfo/);
+  assert.ok(qml.includes('command: ["sh", root.probeScript, "static"]'));
+  assert.ok(qml.includes('Component.onCompleted: staticProbe.running = true'));
+  assert.ok(qml.includes('probeMode = opened ? "details" : "bar"'));
+  assert.ok(qml.includes('if (!opened && !showGpu) return'));
+});

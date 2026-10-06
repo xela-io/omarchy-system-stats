@@ -11,7 +11,11 @@ intervals: 1–5 seconds (2 seconds by default); settings are saved in Omarchy's
 
 CPU and RAM counters are read asynchronously from `/proc` via Quickshell
 `FileView` and parsed only after loading finishes. The shell probe still runs
-for the NVIDIA GPU, CPU sensors, disk and process details.
+for the NVIDIA GPU, CPU sensors, disk and process details. Static facts (CPU
+model, core count, GPU name, VRAM size) are read once at startup. While the
+popup is closed, each refresh only queries GPU load, and nothing at all when
+GPU is hidden from the bar; the full sensor probe runs only while the popup is
+open.
 
 ## Requirements
 
