@@ -41,8 +41,8 @@ test('Shell-Probe liest CPU/RAM nicht redundant per awk', () => {
 
 test('Manifest dokumentiert die konfigurierbaren Metriken und die bisherige Standardleiste', () => {
   const defaults = manifest.barWidget.defaults;
-  assert.deepEqual(defaults, { showCpu: true, showGpu: true, showRam: false, refreshInterval: 2000 });
-  assert.equal(manifest.barWidget.schema.length, 4);
+  assert.deepEqual(defaults, { showCpu: true, showGpu: true, showRam: false, showHotspot: false, refreshInterval: 2000 });
+  assert.equal(manifest.barWidget.schema.length, 5);
 });
 
 test('Jedes im Manifest erlaubte Aktualisierungsintervall ist auch im Popup auswählbar', () => {
@@ -64,7 +64,16 @@ test('Statische Hardwaredaten werden einmal, Sensoren pro Takt nur bei Bedarf ge
   assert.ok(qml.includes('command: ["sh", root.probeScript, "static"]'));
   assert.ok(qml.includes('Component.onCompleted: staticProbe.running = true'));
   assert.ok(qml.includes('probeMode = opened ? "details" : "bar"'));
-  assert.ok(qml.includes('if (!opened && !showGpu) return'));
+  assert.ok(qml.includes('if (!opened && !showGpu && !showHotspot) return'));
+});
+
+test('hwlog-Werte sind optional: Bar liest die CSV nur mit Hotspot-Schalter, Popup blendet fehlende Werte aus', () => {
+  const barPart = script.match(/^bar\)\n([\s\S]*?)^  ;;/m)[1];
+  assert.ok(barPart.includes('[ "${2:-}" = hwlog ] && hwlog'));
+  assert.ok(qml.includes('root.showHotspot ? "hwlog" : ""'));
+  assert.ok(qml.includes('if (showHotspot && hasHwlog)'));
+  assert.ok(qml.includes('visible: root.hasHwlog'));
+  assert.ok(qml.includes('updateSetting("showHotspot"'));
 });
 
 test('Hohe Last färbt Popup-Werte und markiert die Leiste nur für sichtbare Metriken', () => {

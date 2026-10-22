@@ -19,6 +19,15 @@ popup is closed, each refresh only queries GPU load, and nothing at all when
 GPU is hidden from the bar; the full sensor probe runs only while the popup is
 open.
 
+Optionally, the popup also shows GPU hotspot, VRAM temperature, the margin to
+thermal throttling (T.Limit) and the CPU SoC voltage. These come from the
+newest row of a CSV log at `$HWLOG_DIR/YYYY-MM-DD.csv` (default `~/hwlog`)
+with the columns `gpu_hotspot_c`, `gpu_vram_c`, `gpu_tlimit_margin_c` and
+`soc_vddnb_v`, written by a separate logger (nvidia-smi does not expose hotspot
+or VRAM temperature on GeForce cards). Rows older than 60 seconds are ignored;
+without such a log these lines simply stay hidden. A switch adds the hotspot
+to the bar; only then does the bar probe read the CSV.
+
 ## Requirements
 
 - Omarchy with the Quickshell-based bar

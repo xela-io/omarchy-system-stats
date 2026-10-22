@@ -25,6 +25,9 @@ Panel {
   readonly property bool showCpu: setting("showCpu", true) !== false
   readonly property bool showGpu: setting("showGpu", true) !== false
   readonly property bool showRam: setting("showRam", false) === true
+  readonly property bool showHotspot: setting("showHotspot", false) === true
+  // Hotspot, VRAM temp and SoC voltage come from an optional hwlog CSV.
+  readonly property bool hasHwlog: stats.gpu_hotspot !== undefined && stats.gpu_hotspot !== ""
   readonly property int refreshInterval: [1000, 2000, 3000, 4000, 5000].indexOf(Number(setting("refreshInterval", 2000))) >= 0
     ? Number(setting("refreshInterval", 2000)) : 2000
   readonly property int cpuLevel: Model.loadLevel(cpuUsage)
@@ -37,6 +40,7 @@ Panel {
     if (showCpu) parts.push("CPU " + cpuUsage + "%")
     if (showGpu) parts.push("GPU " + value("gpu_usage", "%"))
     if (showRam) parts.push("RAM " + memorySnapshot.percent + "%")
+    if (showHotspot && hasHwlog) parts.push("Hotspot " + value("gpu_hotspot", "°"))
     return parts.length ? parts.join("  ") : "Systemmonitor"
   }
   implicitWidth: button.implicitWidth
@@ -54,7 +58,7 @@ Panel {
     cpuFile.reload()
     memoryFile.reload()
     if (probe.running) return
-    if (!opened && !showGpu) return
+    if (!opened && !showGpu && !showHotspot) return
     probeMode = opened ? "details" : "bar"
     probe.running = true
   }
@@ -93,7 +97,7 @@ Panel {
   }
   Process {
     id: probe
-    command: ["sh", root.probeScript, root.probeMode]
+    command: ["sh", root.probeScript, root.probeMode, root.showHotspot ? "hwlog" : ""]
     stdout: StdioCollector { id: output; waitForEnd: true }
     onExited: {
       root.stats = root.parseOutput(output.text)
@@ -174,6 +178,11 @@ Panel {
                 text: "Temperatur " + root.value("cpu_temp", " °C") + "  ·  Takt " + root.value("cpu_mhz", " MHz") + "  ·  " + root.value("cpu_cores", " Kerne / ") + root.value("cpu_threads", " Threads")
                 color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption
               }
+              Text {
+                visible: root.stats.soc_voltage !== undefined && root.stats.soc_voltage !== ""
+                text: "SoC-Spannung " + root.value("soc_voltage", " V")
+                color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption
+              }
             }
           }
           Rectangle {
@@ -195,6 +204,12 @@ Panel {
                 text: "Temperatur " + root.value("gpu_temp", " °C") + "  ·  Takt " + root.value("gpu_mhz", " MHz") + "  ·  Leistung " + root.value("gpu_power", " W") + "  ·  VRAM " + root.value("vram_used", " / ") + root.value("vram_total", " GiB")
                 color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption
               }
+              Text {
+                visible: root.hasHwlog
+                width: parent.width; wrapMode: Text.WordWrap
+                text: "Hotspot " + root.value("gpu_hotspot", " °C") + "  ·  VRAM-Temperatur " + root.value("vram_temp", " °C") + "  ·  Abstand zur Drosselung " + root.value("gpu_tlimit", " °C")
+                color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.caption
+              }
             }
           }
           PanelSectionHeader { text: "SPEICHER & LAUFWERK" }
@@ -212,6 +227,7 @@ Panel {
             Toggle { width: parent.width; label: "CPU"; checked: root.showCpu; onClicked: root.updateSetting("showCpu", !root.showCpu) }
             Toggle { width: parent.width; label: "NVIDIA-GPU"; checked: root.showGpu; onClicked: root.updateSetting("showGpu", !root.showGpu) }
             Toggle { width: parent.width; label: "RAM"; checked: root.showRam; onClicked: root.updateSetting("showRam", !root.showRam) }
+            Toggle { width: parent.width; label: "GPU-Hotspot (hwlog)"; checked: root.showHotspot; onClicked: root.updateSetting("showHotspot", !root.showHotspot) }
           }
           Text { text: "Aktualisierung"; color: Color.popups.text; font.family: Style.font.family; font.pixelSize: Style.font.body }
           Row {
