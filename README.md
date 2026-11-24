@@ -32,7 +32,7 @@ to the bar; only then does the bar probe read the CSV.
 
 - Omarchy with the Quickshell-based bar
 - An NVIDIA GPU with `nvidia-smi`
-- Standard Linux utilities: `awk`, `lscpu`, `df`, `ps` and `uptime`
+- Standard Linux utilities: `awk`, `lscpu`, `df`, and `ps`
 
 ## Installation
 

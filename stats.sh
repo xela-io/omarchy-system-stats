@@ -58,9 +58,9 @@ details)
         printf "gpu_power=%.0f\n", $4
         printf "gpu_mhz=%s\n", $5
       }'
-  df -hP / | awk 'NR==2 { print "disk_total=" $2; print "disk_used=" $3; print "disk_percent=" $5 }'
+  df -BG -P / | awk 'NR==2 { gsub(/[G%]/, ""); print "disk_total=" $2; print "disk_used=" $3; print "disk_percent=" $5 }'
   printf 'processes=%s\n' "$(ps -e --no-headers | wc -l)"
-  printf 'uptime=%s\n' "$(uptime -p | sed 's/^up //')"
+  printf 'uptime_s=%s\n' "$(cut -d. -f1 /proc/uptime)"
   hwlog
   ;;
 *)

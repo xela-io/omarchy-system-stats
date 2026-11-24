@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "xela.system-stats",
   "name": "System Stats",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "xela",
   "license": "MIT",
   "description": "Configurable CPU/GPU/RAM bar widget with grouped system details.",

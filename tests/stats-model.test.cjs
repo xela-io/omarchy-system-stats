@@ -44,3 +44,14 @@ test('Warnfarben ersetzen die Themenfarbe nur bei erhöhter Last', () => {
   assert.notEqual(model.levelColor(1, 'theme'), 'theme');
   assert.notEqual(model.levelColor(2, 'theme'), model.levelColor(1, 'theme'));
 });
+
+test('Laufzeit und Hardwarenamen werden kurz und deutsch angezeigt', () => {
+  assert.equal(model.formatUptime(48925), '13 Std. 35 Min.');
+  assert.equal(model.formatUptime(300), '5 Min.');
+  assert.equal(model.formatUptime(2 * 86400 + 4 * 3600), '2 T. 4 Std.');
+  assert.equal(model.formatUptime('x'), '');
+  assert.equal(model.shortName('AMD Ryzen 9 9950X3D 16-Core Processor'), 'Ryzen 9 9950X3D');
+  assert.equal(model.shortName('NVIDIA GeForce RTX 4090'), 'GeForce RTX 4090');
+  assert.equal(model.levelColor(2, 'n', 'w', 'c'), 'c');
+  assert.equal(model.levelColor(1, 'n', 'w', 'c'), 'w');
+});

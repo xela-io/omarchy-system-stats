@@ -50,8 +50,30 @@ function loadLevel(percent) {
   return 0
 }
 
-function levelColor(level, normal) {
-  if (level >= 2) return "#e01b24"
-  if (level === 1) return "#e5a50a"
+// warning/critical default to fixed colours; the widget passes theme colours.
+function levelColor(level, normal, warning, critical) {
+  if (level >= 2) return critical || "#e01b24"
+  if (level === 1) return warning || "#e5a50a"
   return normal
+}
+
+// Seconds since boot -> "13 Std. 33 Min." / "2 T. 4 Std." / "5 Min."
+function formatUptime(seconds) {
+  var s = Number(seconds)
+  if (!isFinite(s) || s < 0) return ""
+  var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60)
+  if (d > 0) return d + " T. " + h + " Std."
+  if (h > 0) return h + " Std. " + m + " Min."
+  return m + " Min."
+}
+
+// "AMD Ryzen 9 9950X3D 16-Core Processor" -> "Ryzen 9 9950X3D",
+// "NVIDIA GeForce RTX 4090" -> "GeForce RTX 4090"
+function shortName(name) {
+  return String(name || "")
+    .replace(/^(AMD|Intel\(R\)|NVIDIA)\s+/i, "")
+    .replace(/\s+\d+-Core Processor$/i, "")
+    .replace(/\(R\)|\(TM\)/g, "")
+    .replace(/\s+CPU\s+@.*$/i, "")
+    .trim()
 }

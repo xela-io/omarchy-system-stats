@@ -25,7 +25,7 @@ test('CPU/GPU/RAM lassen sich unabhängig im Popup umschalten, auch wenn alle au
 
 test('Popup passt mit Scrollbereich auf kurze Bildschirme und Werte sind gruppiert', () => {
   assert.ok(qml.includes('Flickable {'));
-  for (const section of ['PROZESSOR & GRAFIK', 'SPEICHER & LAUFWERK', 'LEISTE EINSTELLEN'])
+  for (const section of ['title: "CPU"', 'title: "GPU"', 'title: "Arbeitsspeicher"', 'title: "Systemlaufwerk"', 'IN DER LEISTE', 'AKTUALISIERUNG'])
     assert.ok(qml.includes(section), section);
   assert.ok(qml.includes('fittedContentHeight'));
 });
@@ -74,6 +74,13 @@ test('hwlog-Werte sind optional: Bar liest die CSV nur mit Hotspot-Schalter, Pop
   assert.ok(qml.includes('if (showHotspot && hasHwlog)'));
   assert.ok(qml.includes('visible: root.hasHwlog'));
   assert.ok(qml.includes('updateSetting("showHotspot"'));
+});
+
+test('Popup folgt dem Omarchy-Kit: Theme-Farben, PanelHero, kein fest eingestelltes Rot/Gelb im Widget', () => {
+  assert.ok(qml.includes('PanelHero {'));
+  assert.ok(qml.includes('Commons.Color.urgent'));
+  assert.doesNotMatch(qml, /#[0-9a-f]{6}/i);
+  for (const t of qml.match(/Text \{[^}]*\}/gs) || []) if (/root\.(raw|value)\(|metric\.|parent\.(label|value)/.test(t)) assert.ok(t.includes('Text.PlainText'), t.slice(0, 80));
 });
 
 test('Hohe Last färbt Popup-Werte und markiert die Leiste nur für sichtbare Metriken', () => {
